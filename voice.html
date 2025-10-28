@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Greeting Blob</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap');
+
+        :root {
+            --bg: radial-gradient(circle at top left, #101425, #090b15 60%, #04050a 100%);
+            --blob-gradient: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 55%) #4956ff;
+            --blob-secondary: rgba(255, 255, 255, 0.15);
+            --text-primary: #f4f5ff;
+            --text-muted: #9ca2c9;
+            --accent: #56f1ff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg);
+            font-family: 'Manrope', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 32px;
+            overflow: hidden;
+        }
+
+        .frame {
+            max-width: 960px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 56px;
+            align-items: center;
+        }
+
+        .copy blockquote {
+            margin: 0 0 24px;
+            font-size: clamp(32px, 3.6vw, 52px);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .copy p {
+            margin: 0 0 18px;
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .copy small {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(86, 241, 255, 0.08);
+            border: 1px solid rgba(86, 241, 255, 0.18);
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-size: 13px;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+
+        .blob-stage {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+        }
+
+        .blob {
+            width: clamp(220px, 32vw, 380px);
+            height: clamp(160px, 24vw, 280px);
+            border-radius: 46% 54% 58% 42% / 42% 46% 54% 58%;
+            background: var(--blob-gradient);
+            position: relative;
+            box-shadow:
+                0 30px 80px rgba(73, 86, 255, 0.42),
+                inset 0 0 60px rgba(255, 255, 255, 0.18),
+                inset 0 -45px 60px rgba(9, 12, 48, 0.48);
+            cursor: pointer;
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .blob::before,
+        .blob::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.7;
+            pointer-events: none;
+            transition: transform 0.6s ease, opacity 0.6s ease;
+        }
+
+        .blob::before {
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 12%;
+            background: var(--blob-secondary);
+            filter: blur(30px);
+        }
+
+        .blob::after {
+            width: 40%;
+            height: 40%;
+            bottom: 18%;
+            right: 16%;
+            background: rgba(255, 255, 255, 0.35);
+            filter: blur(18px);
+        }
+
+        .blob.active {
+            transform: scale(1.06);
+        }
+
+        .blob.active::before {
+            transform: scale(1.2);
+            opacity: 0.85;
+        }
+
+        .blob.active::after {
+            transform: translate(-12%, 12%) scale(1.1);
+            opacity: 0.9;
+        }
+
+        .prompt {
+            position: absolute;
+            font-size: 15px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.62);
+            transform: translateY(140px);
+        }
+
+        .toast {
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(9, 14, 38, 0.85);
+            border: 1px solid rgba(86, 241, 255, 0.35);
+            border-radius: 999px;
+            padding: 10px 20px;
+            font-size: 13px;
+            color: var(--accent);
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translate(-50%, -12px);
+        }
+
+        @media (max-width: 900px) {
+            .frame {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .blob-stage {
+                order: -1;
+            }
+
+            .prompt {
+                position: static;
+                transform: none;
+                margin-top: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="frame">
+        <div class="copy">
+            <small><span>●</span>Voice Interaction Prototype</small>
+            <blockquote>Tap the resonance orb to wake the assistant.</blockquote>
+            <p>The orb responds with a greeting using your browser’s speech synthesis. If speech is unavailable, you’ll hear a gentle tone instead.</p>
+            <p>This concept illustrates conversational feedback for sound-first interfaces on desktop web.</p>
+        </div>
+        <div class="blob-stage">
+            <button class="blob" type="button" aria-label="Activate voice greeting"></button>
+            <div class="prompt">Click to say hello</div>
+            <div class="toast" role="status" aria-live="polite">Listening…</div>
+        </div>
+    </main>
+
+    <script>
+        const blob = document.querySelector('.blob');
+        const toast = document.querySelector('.toast');
+
+        const showToast = (message, duration = 1600) => {
+            toast.textContent = message;
+            toast.classList.add('visible');
+            clearTimeout(showToast.timeout);
+            showToast.timeout = setTimeout(() => {
+                toast.classList.remove('visible');
+            }, duration);
+        };
+
+        const playToneFallback = () => {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(660, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.35, audioCtx.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.7);
+                oscillator.connect(gainNode).connect(audioCtx.destination);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.7);
+            } catch (error) {
+                console.warn('AudioContext unavailable:', error);
+            }
+        };
+
+        const speakHello = () => {
+            if (!('speechSynthesis' in window)) {
+                playToneFallback();
+                showToast('Speech unavailable — playing tone');
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance('Hello there. How can I help you today?');
+            utterance.pitch = 1.08;
+            utterance.rate = 1.02;
+            utterance.onstart = () => showToast('Hello there!');
+            utterance.onend = () => showToast('Standing by', 1200);
+
+            try {
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.warn('Speech synthesis failed:', error);
+                playToneFallback();
+                showToast('Speech blocked — playing tone');
+            }
+        };
+
+        blob.addEventListener('click', () => {
+            blob.classList.add('active');
+            speakHello();
+
+            clearTimeout(blob._deactivate);
+            blob._deactivate = setTimeout(() => {
+                blob.classList.remove('active');
+            }, 600);
+        });
+    </script>
+</body>
+</html>
