@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftUI Prototype</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg: radial-gradient(circle at top left, #f2f4ff 0%, #e8ecff 32%, #fef6ff 100%);
+            --device-shadow: 0 30px 80px rgba(45, 54, 89, 0.18);
+            --screen-bg: linear-gradient(180deg, #fdfdff 0%, #f6f6fb 45%, #ffffff 100%);
+            --accent: #007aff;
+            --accent-soft: rgba(0, 122, 255, 0.12);
+            --text-primary: #111527;
+            --text-secondary: #6b6f80;
+            --divider: rgba(17, 21, 39, 0.08);
+            --success: #34c759;
+            --warning: #ff9500;
+            --danger: #ff3b30;
+            --tab-bg: rgba(17, 21, 39, 0.82);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--text-primary);
+            padding: 60px 20px;
+        }
+
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .device {
+            position: relative;
+            width: 390px;
+            height: 844px;
+            border-radius: 48px;
+            padding: 12px;
+            background: #0b1026;
+            box-shadow: var(--device-shadow);
+        }
+
+        .notch {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 126px;
+            height: 32px;
+            background: #000714;
+            border-radius: 18px;
+        }
+
+        .screen {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 40px;
+            background: var(--screen-bg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-bar {
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 28px 0;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.02em;
+        }
+
+        .status-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-icons span {
+            width: 16px;
+            height: 8px;
+            border-radius: 4px;
+            background: #0b1026;
+            display: inline-block;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 28px 96px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .large-title {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+
+        .profile {
+            width: 44px;
+            height: 44px;
+            border-radius: 16px;
+            background: var(--accent-soft);
+            border: none;
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .tagline {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 22px;
+        }
+
+        .segmented-control {
+            display: inline-flex;
+            background: rgba(17, 21, 39, 0.05);
+            padding: 6px;
+            border-radius: 14px;
+            gap: 6px;
+            margin-bottom: 28px;
+        }
+
+        .segment {
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: 12px;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .segment.active {
+            background: #fff;
+            color: var(--text-primary);
+            box-shadow: 0 10px 24px rgba(17, 21, 39, 0.12);
+        }
+
+        .health-summary {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .summary-card {
+            background: #fff;
+            border-radius: 22px;
+            padding: 20px;
+            display: grid;
+            gap: 16px;
+            box-shadow: 0 18px 40px rgba(14, 17, 33, 0.08);
+        }
+
+        .summary-card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .summary-value {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .summary-trend {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .trend-positive {
+            color: var(--success);
+        }
+
+        .trend-neutral {
+            color: var(--warning);
+        }
+
+        .trend-negative {
+            color: var(--danger);
+        }
+
+        .overview-card {
+            background: linear-gradient(180deg, rgba(0, 122, 255, 0.92) 0%, rgba(10, 76, 187, 0.85) 100%);
+            border-radius: 26px;
+            padding: 28px;
+            margin-bottom: 32px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .overview-card::after {
+            content: '';
+            position: absolute;
+            top: -70px;
+            right: -100px;
+            width: 220px;
+            height: 220px;
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 50%;
+            filter: blur(0.5px);
+        }
+
+        .overview-card h2 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .overview-card p {
+            margin: 0;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.86);
+            line-height: 1.5;
+        }
+
+        .timeline {
+            display: grid;
+            gap: 18px;
+            margin-bottom: 40px;
+        }
+
+        .timeline-section h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .list-card {
+            background: #fff;
+            border-radius: 22px;
+            padding: 18px 20px;
+            box-shadow: 0 12px 28px rgba(12, 15, 28, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .list-leading {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .list-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .list-content {
+            display: grid;
+            gap: 4px;
+        }
+
+        .list-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .list-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .chevron {
+            width: 10px;
+            height: 18px;
+            background: transparent;
+            border: none;
+            position: relative;
+        }
+
+        .chevron::before,
+        .chevron::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 12px;
+            background: rgba(17, 21, 39, 0.48);
+            left: 4px;
+            border-radius: 2px;
+        }
+
+        .chevron::before {
+            transform: rotate(45deg);
+            top: 0;
+        }
+
+        .chevron::after {
+            transform: rotate(-45deg);
+            bottom: 0;
+        }
+
+        .tab-bar-space {
+            height: 84px;
+        }
+
+        .tab-bar {
+            position: absolute;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 56px);
+            height: 72px;
+            background: var(--tab-bg);
+            border-radius: 28px;
+            backdrop-filter: blur(24px);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 12px;
+            box-shadow: 0 18px 40px rgba(8, 11, 21, 0.35);
+        }
+
+        .tab-item {
+            display: grid;
+            justify-items: center;
+            gap: 6px;
+            color: rgba(255, 255, 255, 0.62);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .tab-item.active {
+            color: #fff;
+        }
+
+        .tab-indicator {
+            width: 28px;
+            height: 28px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.16);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .device-foot {
+            font-size: 14px;
+            color: var(--text-secondary);
+            letter-spacing: 0.02em;
+        }
+    </style>
+</head>
+<body>
+    <div class="workspace">
+        <div class="device">
+            <div class="notch"></div>
+            <div class="screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <div class="status-icons">
+                        <span></span>
+                        <span></span>
+                        <span style="width: 24px;"></span>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <header class="nav">
+                        <div>
+                            <div class="large-title">Wellness</div>
+                            <div class="tagline">Track your day with mindful insights.</div>
+                        </div>
+                        <button class="profile">JF</button>
+                    </header>
+
+                    <div class="segmented-control">
+                        <button class="segment active">Overview</button>
+                        <button class="segment">Metrics</button>
+                        <button class="segment">Trends</button>
+                    </div>
+
+                    <section class="health-summary">
+                        <article class="summary-card">
+                            <h3>Heart Rate</h3>
+                            <div class="summary-value">64 bpm</div>
+                            <div class="summary-trend trend-positive">↑ 2 bpm</div>
+                        </article>
+                        <article class="summary-card">
+                            <h3>Mindful Minutes</h3>
+                            <div class="summary-value">18 min</div>
+                            <div class="summary-trend trend-neutral">• on track</div>
+                        </article>
+                        <article class="summary-card">
+                            <h3>Sleep Quality</h3>
+                            <div class="summary-value">92%</div>
+                            <div class="summary-trend trend-positive">↑ +5%</div>
+                        </article>
+                        <article class="summary-card">
+                            <h3>Stress Check-in</h3>
+                            <div class="summary-value">Low</div>
+                            <div class="summary-trend trend-positive">↓ balanced</div>
+                        </article>
+                    </section>
+
+                    <section class="overview-card">
+                        <h2>Your day, in harmony</h2>
+                        <p>Breathing exercises and gentle reminders keep you centred.
+                            Review guided sessions and adaptive focus routines tailored for the afternoon slump.</p>
+                    </section>
+
+                    <section class="timeline">
+                        <div class="timeline-section">
+                            <h4>Next up</h4>
+                            <div class="list-card">
+                                <div class="list-leading">
+                                    <div class="list-icon" style="background: rgba(0, 122, 255, 0.2); color: var(--accent);">
+                                        
+                                    </div>
+                                    <div class="list-content">
+                                        <div class="list-title">Guided Breath Reset</div>
+                                        <div class="list-subtitle">Starts in 15 min • 5 minute focus</div>
+                                    </div>
+                                </div>
+                                <button class="chevron" aria-label="View details"></button>
+                            </div>
+                        </div>
+
+                        <div class="timeline-section">
+                            <h4>Recent activity</h4>
+                            <div class="list-card">
+                                <div class="list-leading">
+                                    <div class="list-icon" style="background: rgba(52, 199, 89, 0.2); color: var(--success);">
+                                        ✓
+                                    </div>
+                                    <div class="list-content">
+                                        <div class="list-title">Morning Routine</div>
+                                        <div class="list-subtitle">Stretch &amp; reflect • Completed 07:30</div>
+                                    </div>
+                                </div>
+                                <button class="chevron" aria-label="View details"></button>
+                            </div>
+
+                            <div class="list-card">
+                                <div class="list-leading">
+                                    <div class="list-icon" style="background: rgba(255, 149, 0, 0.2); color: var(--warning);">
+                                        ☀︎
+                                    </div>
+                                    <div class="list-content">
+                                        <div class="list-title">Sunlight Break</div>
+                                        <div class="list-subtitle">Logged • 16 minute outdoor walk</div>
+                                    </div>
+                                </div>
+                                <button class="chevron" aria-label="View details"></button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="tab-bar-space"></div>
+                </div>
+
+                <nav class="tab-bar">
+                    <div class="tab-item active">
+                        <div class="tab-indicator">⌂</div>
+                        Home
+                    </div>
+                    <div class="tab-item">
+                        <div class="tab-indicator" style="background: transparent; color: rgba(255,255,255,0.7);">⌚︎</div>
+                        Metrics
+                    </div>
+                    <div class="tab-item">
+                        <div class="tab-indicator" style="background: transparent; color: rgba(255,255,255,0.7);">★</div>
+                        Focus
+                    </div>
+                    <div class="tab-item">
+                        <div class="tab-indicator" style="background: transparent; color: rgba(255,255,255,0.7);">⋯</div>
+                        More
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <div class="device-foot">SwiftUI layout study · 390×844 pt viewport</div>
+    </div>
+</body>
+</html>
